@@ -1,6 +1,5 @@
 
-def Dias_clases():
-    dias = {
+dias = {
         "Lunes",
         "Martes",
         "Miércoles",
@@ -8,19 +7,16 @@ def Dias_clases():
         "Viernes",
         "Sábado",
         "Domingo"}        
-horario_clases = [
-    {
-    "H1":"7:00 - 7:45",
-    "H2":"7:45 - 8:30",
-    "H3":"8:30 - 9:15",
-    "H4":"9:15 - 10:00",
-    "H5":"10:00 - 10:45",
-    "H6":"10:45 - 11:30",
-    "H7":"11:30 - 12:15",
-    "H8":"12:15 - 13:00",
-    }
-]
-
+bhoras = {
+        0:"7:00 - 7:45",
+        1:"7:45 - 8:30",
+        2:"8:30 - 9:15",
+        3:"9:15 - 10:00",
+        4:"10:00 - 10:45",
+        5:"10:45 - 11:30",
+        6:"11:30 - 12:15",
+        7:"12:15 - 13:00"
+        }
 
 oferta_materias = [
 {
@@ -68,6 +64,10 @@ def crearoferta_materias():
             materia_encontrada = materia
             print("Usted elegio la materia: " + materia["materia"])
             break
+        elif materia["materia"] == codigo:
+            materia_encontrada = materia
+            print("Usted elegio la materia: " + materia["materia"])
+            break
     if not materia_encontrada:
         print("Código no encontrado en el catálogo.")
         return
@@ -77,13 +77,13 @@ def crearoferta_materias():
     for dia in Dias_clases:
         if dia in Dias_clases:
             dia_encontrado = dia
-            print("Seleccionaste el día: " + dia)
+            print("Seleccionaste el día: " + dia_encontrado)
             break
     if not dia_encontrado:
         print("Día inválido.")
         return
     
-    cupo = int(input("Ingrese el cupo máximo de estudiantes:Ej, 30: "))
+    cupo = int(input("Ingrese el cupo máximo de estudiantes, máximo 50: "))
     if cupo < 50:
             print("Cupo establecido en: " + str(cupo))
 
@@ -92,20 +92,24 @@ def crearoferta_materias():
 
     elif cupo > 50:
             print("El cupo máximo permitido es 50.")
-    
-    bloques = input("Ingrese los bloques horarios")
-    if horario_clases in horario_clases:
-            print("Seleccionaste el bloque horario: " + horario_clases[horario_clases])
-    else:
-            print("Bloque horario inválido."+ horario_clases[horario_clases])
+
+    Horas_clases = input("Ingrese los bloques horarios: ")
+    horario_encontrado = None
+    for horas in bhoras:
+        if horas in bhoras:
+            horario_encontrado = bhoras[horas]
+            print("Seleccionaste el bloque horario: " + horario_encontrado)
+            break
+        if not horario_encontrado:
+            print("Bloque horario inválido.")
             return
     
     seccion = input("Ingrese la sección de la materia: ")
     if seccion is oferta_materias:
             print("Seleccionaste la seccion"+ oferta_materias[seccion])
             return
-    
-    activa = input("¿La materia está activa? (True/False): ").lower() == 'true'
+
+
 crearoferta_materias()
 #rehice todo el codigo porque estaba mal estructurado y con errores aparte se me olvido que queria hacer.
 #teoricamente ya funciona, lee perono guarda nada aun.
