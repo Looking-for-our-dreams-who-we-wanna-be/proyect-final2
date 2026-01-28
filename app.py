@@ -1,115 +1,133 @@
+import json
+import os
 
-dias = {
-        "Lunes",
-        "Martes",
-        "Miércoles",
-        "Jueves",
-        "Viernes",
-        "Sábado",
-        "Domingo"}        
+ARCHIVO_DB = "materias.json"
+
 bhoras = {
-        0:"7:00 - 7:45",
-        1:"7:45 - 8:30",
-        2:"8:30 - 9:15",
-        3:"9:15 - 10:00",
-        4:"10:00 - 10:45",
-        5:"10:45 - 11:30",
-        6:"11:30 - 12:15",
-        7:"12:15 - 13:00"
-        }
+    0: "7:00 - 7:45", 1: "7:45 - 8:30", 2: "8:30 - 9:15", 3: "9:15 - 10:00",
+    4: "10:00 - 10:45", 5: "10:45 - 11:30", 6: "11:30 - 12:15", 7: "12:15 - 13:00"
+}
 
-oferta_materias = [
-{
-    "codigo_materia": "MAT0101",
-    "materia": "Matematicas I", 
-    "dia": "",
-    "cupo" : 0,
-    "bloques": [],
-    "seccion": "",
-    "horario": "",
-    "activa": False,
-},
-{
-    "codigo_materia": "FIS0101",
-    "materia": "Fisica I",
-    "dia": [],
-    "cupo" : 0,
-    "bloques": [],
-    "seccion": "D1",
-    "activa": False,
-},
-{
-    "materia": "Quimica I",
-    "codigo_materia": "QUI0101",
-    "dia": [],
-    "cupo" : 0,
-    "bloques": [],
-    "seccion": "D1",
-    "activa": False,
-},
-{
-    "01S-LOG0101": "Geometría analítica",
+datos_iniciales = [
+    {
+        "codigo_materia": "MAT0101", "materia": "Matematicas I", 
+        "dia": [], "cupo": 0, "bloques": [], "seccion": "", "activa": False
     },
+    {
+        "codigo_materia": "FIS0101", "materia": "Fisica I", 
+        "dia": [], "cupo": 0, "bloques": [], "seccion": "D1", "activa": False
+    },
+    {
+        "codigo_materia": "QUI0101", "materia": "Quimica I", 
+        "dia": [], "cupo": 0, "bloques": [], "seccion": "D1", "activa": False
+    },
+    {
+        "codigo_materia": "LOG0101", "materia": "Geometría analítica",
+        "dia": [], "cupo": 0, "bloques": [], "seccion": "D1", "activa": False
+    }
 ]
 
-# faltan materias juasjuas de mientras esta asi pero hay que completarlocon el mismo formato
+
+def cargar_datos():
+    if os.path.exists(ARCHIVO_DB):
+        try:
+            with open(ARCHIVO_DB, "r") as archivo:
+                return json.load(archivo)
+        except:
+            return datos_iniciales
+    else:
+        return datos_iniciales
+
+def guardar_datos(lista_materias):
+    with open(ARCHIVO_DB, "w") as archivo:
+        json.dump(lista_materias, archivo, indent=4)
+
+oferta_materias = cargar_datos()
+
 
 def crearoferta_materias():
-    print ("Crear oferta de materias")
-    
+    print ("\n--- CREAR OFERTA DE MATERIAS ---")
+
     codigo = input("Ingrese el código de la materia: ")
     materia_encontrada = None
+    
     for materia in oferta_materias:
         if materia["codigo_materia"] == codigo:
             materia_encontrada = materia
-            print("Usted elegio la materia: " + materia["materia"])
             break
         elif materia["materia"] == codigo:
             materia_encontrada = materia
-            print("Usted elegio la materia: " + materia["materia"])
-            break
+            break 
+            
     if not materia_encontrada:
-        print("Código no encontrado en el catálogo.")
+        print(" Código no encontrado en el catálogo.")
+        return 
+
+    print(f" Editando: {materia_encontrada['materia']}")
+
+    dia_input = input("Ingrese el día (ej, Lunes): ").capitalize()
+    if dia_input in ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]:
+        materia_encontrada["dia"] = [dia_input]
+        print(f"   -> Día {dia_input} guardado.")
+    else:
+        print(" Día inválido.")
         return
 
-    Dias_clases = input("Ingrese el día de la clase ej, Lunes: ")
-    dia_encontrado = None
-    for dia in Dias_clases:
-        if dia in Dias_clases:
-            dia_encontrado = dia
-            print("Seleccionaste el día: " + dia_encontrado)
-            break
-    if not dia_encontrado:
-        print("Día inválido.")
+    try:
+        cupo = int(input("Ingrese el cupo (Máx 50): "))
+        if cupo <= 0: 
+            print(" El cupo debe ser positivo.")
+            return
+        elif cupo > 50: 
+            print(" El cupo máximo es 50.")
+            return
+        else: 
+            materia_encontrada["cupo"] = cupo
+            print(f"   -> Cupo {cupo} guardado.")
+    except ValueError:
+        print(" Error: Ingrese solo números.")
         return
-    
-    cupo = int(input("Ingrese el cupo máximo de estudiantes, máximo 50: "))
-    if cupo < 50:
-            print("Cupo establecido en: " + str(cupo))
 
-    elif cupo <= 0:
-            print("El cupo debe ser un número positivo.")
-
-    elif cupo > 50:
-            print("El cupo máximo permitido es 50.")
-
-    Horas_clases = input("Ingrese los bloques horarios: ")
-    horario_encontrado = None
-    for horas in bhoras:
-        if horas in bhoras:
-            horario_encontrado = bhoras[horas]
-            print("Seleccionaste el bloque horario: " + horario_encontrado)
-            break
-        if not horario_encontrado:
-            print("Bloque horario inválido.")
+    entrada_bloques = input("Ingrese los bloques horarios (ej. 0,1): ")
+    try:
+        lista_bloques = [int(x) for x in entrada_bloques.split(",")]
+        bloques_validos = []
+        for num in lista_bloques:
+            if num in bhoras:
+                bloques_validos.append(num)
+            else:
+                print(f" Bloque {num} no existe.")
+        
+        if bloques_validos:
+            materia_encontrada["bloques"] = bloques_validos 
+            print("   -> Bloques guardados.")
+        else:
+            print(" No se guardaron bloques válidos.")
             return
+    except ValueError:
+        print(" Error en formato de horas.")
+        return
+
+    seccion = input("Ingrese la sección (Enter para default): ")
+    if seccion != "":
+        materia_encontrada["seccion"] = seccion 
+
+    materia_encontrada["activa"] = True 
+
+    print("\n--- ASÍ QUEDÓ TU MATERIA ---")
+    print(f"Materia: {materia_encontrada['materia']}")
+    print(f"Código:  {materia_encontrada['codigo_materia']}")
+    print(f"Cupo:    {materia_encontrada['cupo']}")
+    print(f"Día:     {materia_encontrada['dia']}")
+    print(f"Bloques: {materia_encontrada['bloques']}")
+    print(f"Activa:  {materia_encontrada['activa']}")
     
-    seccion = input("Ingrese la sección de la materia: ")
-    if seccion is oferta_materias:
-            print("Seleccionaste la seccion"+ oferta_materias[seccion])
-            return
+    guardar_datos(oferta_materias)
+    print(" ¡Cambios guardados en materias.json!")
 
 
 crearoferta_materias()
+
 #rehice todo el codigo porque estaba mal estructurado y con errores aparte se me olvido que queria hacer.
 #teoricamente ya funciona, lee perono guarda nada aun.
+
