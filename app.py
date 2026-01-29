@@ -27,7 +27,6 @@ datos_iniciales = [
     }
 ]
 
-
 def cargar_datos():
     if os.path.exists(ARCHIVO_DB):
         try:
@@ -36,7 +35,7 @@ def cargar_datos():
         except:
             return datos_iniciales
     else:
-        return datos_iniciales
+        return print("No se encontró el archivo materias.json.")
 
 def guardar_datos(lista_materias):
     with open(ARCHIVO_DB, "w") as archivo:
@@ -100,7 +99,7 @@ def crearoferta_materias():
         
         if bloques_validos:
             materia_encontrada["bloques"] = bloques_validos 
-            print("   -> Bloques guardados.")
+            print("Bloques guardados.")
         else:
             print(" No se guardaron bloques válidos.")
             return

@@ -31,8 +31,8 @@
         "activa": true
     },
     {
-        "codigo_materia": "LOG0101",
-        "materia": "Geometr\u00eda anal\u00edtica",
+        "codigo_materia": "MAT0102",
+        "materia": "Geometra analtica",
         "dia": [],
         "cupo": 0,
         "bloques": [],
