@@ -23,7 +23,7 @@
         "dia": [
             "Lunes"
         ],
-        "cupo": 49,
+        "cupo": 46,
         "bloques": [
             2
         ],
@@ -36,6 +36,20 @@
         "dia": [],
         "cupo": 0,
         "bloques": [],
+        "seccion": "D1",
+        "activa": false
+    },
+    {
+        "codigo_materia": "SISISI!",
+        "materia": "polnitorico",
+        "uc": 4,
+        "dia": [
+            "Lunes"
+        ],
+        "cupo": 40,
+        "bloques": [
+            4
+        ],
         "seccion": "D1",
         "activa": false
     }

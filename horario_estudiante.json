@@ -8,5 +8,27 @@
         "bloques": [
             2
         ]
+    },
+    {
+        "estudiante": "12345678",
+        "materia": "Quimica I",
+        "codigo_materia": "QUI0101",
+        "dia": [
+            "Lunes"
+        ],
+        "bloques": [
+            2
+        ]
+    },
+    {
+        "estudiante": "V-12345678",
+        "materia": "Quimica I",
+        "codigo_materia": "QUI0101",
+        "dia": [
+            "Lunes"
+        ],
+        "bloques": [
+            2
+        ]
     }
 ]

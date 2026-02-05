@@ -1,130 +1,174 @@
 import json
 import os
+import time
 
-ARCHIVO_DB = "materias.json"          
-ARCHIVO_ESTUDIANTE = "horario_estudiante.json" 
+ARCHIVO_MATERIAS = "materias.json"         
+ARCHIVO_INSCRIPCIONES = "horario_estudiante.json" 
 
+HORAS_CLASE = [
+    "7:00 - 7:45", "7:45 - 8:30", "8:30 - 9:15", "9:15 - 10:00",
+    "10:00 - 10:45", "10:45 - 11:30", "11:30 - 12:15", "12:15 - 1:00"
+]
 
-
-def cargar_json(nombre_archivo):
-    if os.path.exists(nombre_archivo):
+def cargar_json(archivo):
+    if os.path.exists(archivo):
         try:
-            with open(nombre_archivo, "r", encoding='utf-8') as archivo:
-                return json.load(archivo)
+            with open(archivo, "r", encoding='utf-8') as f:
+                return json.load(f)
         except:
             return []
     return []
 
-def guardar_json(nombre_archivo, datos):
-    with open(nombre_archivo, "w", encoding='utf-8') as archivo:
-        json.dump(datos, archivo, indent=4)
+def guardar_json(archivo, datos):
+    with open(archivo, "w", encoding='utf-8') as f:
+        json.dump(datos, f, indent=4, ensure_ascii=False)
 
-
-
-def inscribir_materia():
-    oferta_materias = cargar_json(ARCHIVO_DB)
-    mis_inscripciones = cargar_json(ARCHIVO_ESTUDIANTE)
+def ver_oferta_academica():
+    materias = cargar_json(ARCHIVO_MATERIAS)
     
-    if not oferta_materias:
-        print("No hay oferta de materias cargada.")
-        return
+    print(f"{'CÓDIGO':<8} | {'MATERIA':<15} | {'CUPO':<5} | {'UC':<3} | {'ESTADO'}")
 
-    print("\n--- INSCRIPCIÓN ---")
-    codigo = input("Ingrese el código o nombre de la materia: ").upper()
+    
+    hay_materias = False
+    for m in materias:
+
+        if m.get("activa") == True:
+            hay_materias = True
+
+            estado_inscripcion = "Disponible"
+            if m["cupo"] <= 0:
+                estado_inscripcion = "Agotada"
+            uc = m.get("uc", 3)
+            
+            print(f"{m['codigo_materia']:<10} | {m['materia']:<25} | {m['cupo']:<5} | {uc:<3} | {estado_inscripcion}")
+            
+    if not hay_materias:
+        print(">> No hay materias ofertadas en este momento.")
+
+def inscribir_materia(usuario_cedula):
+
+    ver_oferta_academica()
+    
+    catalogo = cargar_json(ARCHIVO_MATERIAS)
+    inscripciones = cargar_json(ARCHIVO_INSCRIPCIONES)
+    
+    print(f"\n--- INSCRIPCIÓN DE: {usuario_cedula.upper()} ---")
+    codigo = input("Ingrese el CÓDIGO de la materia a inscribir: ").upper()
 
     materia_encontrada = None
-    for materia in oferta_materias:
-        if materia["codigo_materia"] == codigo or materia["materia"].upper() == codigo:
-            materia_encontrada = materia
-            break 
+    for m in catalogo:
+        if m["codigo_materia"] == codigo:
+            materia_encontrada = m
+            break
 
     if not materia_encontrada:
-        print("Materia no encontrada en el catálogo.")
+        print("Error: Materia no encontrada.")
         return
-
-    if not materia_encontrada["activa"]:
-        print(f"La materia '{materia_encontrada['materia']}' no está activa.")
+    if not materia_encontrada.get("activa"):
+        print("Error: La materia no está activa.")
         return
-
     if materia_encontrada["cupo"] <= 0:
-        print("No quedan cupos disponibles.")
+        print("Error: Materia sin cupos.")
         return
 
-    for mi_materia in mis_inscripciones:
-        if mi_materia["codigo_materia"] == materia_encontrada["codigo_materia"]:
+    for reg in inscripciones:
+        if reg.get("estudiante") == usuario_cedula and reg["codigo_materia"] == codigo:
             print("Ya tienes inscrita esta materia.")
             return
 
     materia_encontrada["cupo"] -= 1
-    guardar_json(ARCHIVO_DB, oferta_materias)
+    guardar_json(ARCHIVO_MATERIAS, catalogo)
 
     nueva_inscripcion = {
+        "estudiante": usuario_cedula,
         "materia": materia_encontrada["materia"],
         "codigo_materia": materia_encontrada["codigo_materia"],
         "dia": materia_encontrada["dia"],
         "bloques": materia_encontrada["bloques"]
     }
-    mis_inscripciones.append(nueva_inscripcion)
-    guardar_json(ARCHIVO_ESTUDIANTE, mis_inscripciones)
-
-    print(f"¡Inscripción exitosa en {materia_encontrada['materia']}!")
-
-def generar_horario_visual():
-    materias_inscritas = cargar_json(ARCHIVO_ESTUDIANTE)
-
-    if not materias_inscritas:
-        print("\nNo tienes materias inscritas aún.")
-        return
-    horario_base = [
-        ["HORA",      "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"], 
-        ["7:00-7:45", "---",   "---",    "---",       "---",    "---"],     
-        ["7:45-8:30", "---",   "---",    "---",       "---",    "---"],     
-        ["8:30-9:15", "---",   "---",    "---",       "---",    "---"],     
-        ["9:15-10:00","---",   "---",    "---",       "---",    "---"],     
-    ]
-    mi_horario = [fila[:] for fila in horario_base]
-
-    mapa_dias = {"Lunes": 1, "Martes": 2, "Miércoles": 3, "Miercoles": 3, "Jueves": 4, "Viernes": 5}
-    mapa_bloques = {0: 1, 1: 2, 2: 3, 3: 4} 
-
-    print("\nGenerando horario basado en tus inscripciones...")
+    inscripciones.append(nueva_inscripcion)
+    guardar_json(ARCHIVO_INSCRIPCIONES, inscripciones)
     
-    for materia in materias_inscritas:
-        nombre = materia["materia"]
-        lista_dias = materia["dia"] 
-        lista_bloques = materia["bloques"]
+    print(f"¡Inscripción exitosa en {materia_encontrada['materia']}!")
+    time.sleep(4.5)
 
-        for dia in lista_dias:
+def ver_mi_horario(usuario_cedula):
+    todas_inscripciones = cargar_json(ARCHIVO_INSCRIPCIONES)
+
+    mis_materias = []
+    for reg in todas_inscripciones:
+        if reg.get("estudiante") == usuario_cedula:
+            mis_materias.append(reg)
+            
+    if not mis_materias:
+        print(f"\n⚠️ El estudiante {usuario_cedula} no tiene materias inscritas.")
+        return
+
+    horario_visual = [["HORA", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"]]
+
+    for hora in HORAS_CLASE:
+
+        hora_corta = hora.replace(" ", "") 
+        fila = [hora_corta] + ["---"] * 6 
+        horario_visual.append(fila)
+
+    mapa_dias = {
+        "Lunes": 1, "Martes": 2, "Miércoles": 3, "Miercoles": 3,
+        "Jueves": 4, "Viernes": 5, "Sábado": 6, "Sabado": 6
+    }
+    
+    for m in mis_materias:
+
+        nombre_corto = m["materia"][:9] 
+        for dia in m["dia"]:
             if dia in mapa_dias:
-                columna = mapa_dias[dia] 
-                for bloque in lista_bloques:
-                    if bloque in mapa_bloques:
-                        fila = mapa_bloques[bloque]
-                        mi_horario[fila][columna] = nombre
+                columna = mapa_dias[dia]
+                for bloque in m["bloques"]:
+                    if 0 <= bloque < len(HORAS_CLASE):
+                        fila = bloque + 1
+                        horario_visual[fila][columna] = nombre_corto
+    ancho_total = 78
+    print("\n" + "="*ancho_total)
+    print(f"HORARIO: {usuario_cedula.upper()}")
+    print("="*ancho_total)
+    
+    for fila in horario_visual:
 
-    print("\n" + "="*80)
-    for fila in mi_horario:
-        print(f"{fila[0]:12} | {fila[1]:12} | {fila[2]:12} | {fila[3]:12} | {fila[4]:12} | {fila[5]:12}|")
-    print("="*80)
+        print(f"{fila[0]:11} | {fila[1]:9} | {fila[2]:9} | {fila[3]:9} | {fila[4]:9} | {fila[5]:9} | {fila[6]:9}|")
+        print("-" * ancho_total)
+    
+    input("\nPresione Enter...")
 
-def menu_alumno():
+def menu_alumno(usuario_cedula):
     while True:
-        print("\n--- SISTEMA ALUMNO UNEFA ---")
-        print("1. Inscribir Materia")
-        print("2. Ver Horario")
-        print("3. Salir")
-        
-        opcion = input("Seleccione una opción: ")
+        if os.name == 'nt': os.system('cls')
+        else: os.system('clear')
 
+        print(f"PANEL DE ALUMNO: {usuario_cedula.upper()}")
+        print("1. Ver Oferta Académica (Materias Activas)")
+        print("2. Inscribir Materia")
+        print("3. Ver mi Horario")
+        print("4. Salir")
+        
+        opcion = input("\n>> Seleccione una opción: ")
+        
         if opcion == "1":
-            inscribir_materia()
+            ver_oferta_academica()
+            input("\nPresione Enter para volver...")
         elif opcion == "2":
-            generar_horario_visual()
+            inscribir_materia(usuario_cedula)
         elif opcion == "3":
-            print("Saliendo del sistema...")
+            ver_mi_horario(usuario_cedula)
+        elif opcion == "4":
+            print("Cerrando sesión...")
             break
         else:
             print("Opción no válida.")
 
 if __name__ == "__main__":
-    menu_alumno()
+
+    usuario = "V-12345678" 
+    
+    print(f"--- MODO PRUEBA AUTOMÁTICO CON: {usuario} ---")
+    menu_alumno(usuario)
+    
