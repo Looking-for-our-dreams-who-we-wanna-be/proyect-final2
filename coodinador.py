@@ -18,7 +18,6 @@ def guardar_datos(datos_nuevos):
         json.dump(datos_nuevos, archivo, indent=4, ensure_ascii=False)
     print(">>> Cambios guardados exitosamente en el archivo.")
 
-# --- FUNCIONES DE USUARIOS ---
 def cargar_usuarios_db():
     if path.exists(ARCHIVO_USUARIOS):
         try:
@@ -50,7 +49,7 @@ def cambiar_jerarquia():
     
     usuario_encontrado = None
     for u in usuarios:
-        if u["usuario"] == usuario_buscado:
+        if u["usuario"].upper() == usuario_buscado:
             usuario_encontrado = u
             break
             
@@ -73,15 +72,12 @@ def cambiar_jerarquia():
     elif op == "2": nuevo_rol = "profesor"
     elif op == "3": nuevo_rol = "alumno"
     else:
-        print("⛔ Opción inválida.")
+        print("Opción inválida.")
         return
 
-    # Guardamos el cambio
     usuario_encontrado["rol"] = nuevo_rol
     guardar_usuarios_db(usuarios)
-    print(f"✅ ¡Cambio exitoso! Ahora {usuario_encontrado['usuario']} es {nuevo_rol.upper()}.")
-
-# --- FUNCIONES DE MATERIAS ---
+    print(f"¡Cambio exitoso! Ahora {usuario_encontrado['usuario']} es {nuevo_rol.upper()}.")
 
 def mostrar_todas(lista_materias):
     print("\n--- LISTA DE MATERIAS ---")
@@ -148,10 +144,8 @@ def buscar_y_modificar(lista_materias):
     if hay_cambios:
         guardar_datos(lista_materias)
 
-# --- MENÚ PRINCIPAL ---
-
 def menu_coordinador():
-    # Cargamos las materias al inicio del ciclo
+
     materias = cargar_datos()
     
     while True:
@@ -186,10 +180,8 @@ def menu_coordinador():
             if codigo_existe:
                 print("¡Error! Ya existe una materia con ese código.")
             else:
-                # 2. Pedir resto de datos
                 nuevo_nombre = input("Nombre de la materia: ")
                 
-                # Validación de cupo
                 nuevo_cupo = 0
                 while True:
                     entrada_cupo = input("Ingrese cupo máximo (numérico): ")
@@ -199,7 +191,6 @@ def menu_coordinador():
                     else:
                         print("Por favor, ingrese un número válido.")
 
-                # Validación de UC
                 nuevas_uc = 0
                 while True:
                     entrada_uc = input("Ingrese Unidades de Crédito (ej. 3): ")
@@ -221,7 +212,6 @@ def menu_coordinador():
                         if p.strip().isdigit():
                             lista_bloques.append(int(p.strip()))
 
-                # 3. Crear el diccionario
                 nueva_materia = {
                     "codigo_materia": nuevo_codigo,
                     "materia": nuevo_nombre,
@@ -232,8 +222,7 @@ def menu_coordinador():
                     "seccion": "D1",        
                     "activa": True          
                 }
-                
-                # 4. Agregar y Guardar
+
                 materias.append(nueva_materia)
                 guardar_datos(materias)
                 print(f"\n>>> ¡Materia '{nuevo_nombre}' ({nuevas_uc} UC) creada exitosamente!")

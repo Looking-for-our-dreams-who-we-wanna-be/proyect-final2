@@ -40,16 +40,11 @@
         "activa": false
     },
     {
-        "codigo_materia": "SISISI!",
-        "materia": "polnitorico",
-        "uc": 4,
-        "dia": [
-            "Lunes"
-        ],
-        "cupo": 40,
-        "bloques": [
-            4
-        ],
+        "codigo_materia": "FIS0102",
+        "materia": "Fisica II",
+        "dia": [],
+        "cupo": 0,
+        "bloques": [],
         "seccion": "D1",
         "activa": false
     }

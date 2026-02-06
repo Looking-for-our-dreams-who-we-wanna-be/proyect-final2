@@ -39,7 +39,7 @@ def iniciar_monitor():
             print("-" * 60)
             
             for m in materias:
-                # Color visual simple: Si hay cupo muestra numero, si es 0 avisa
+
                 cupo_visual = f"{m['cupo']}" if m['cupo'] > 0 else " LLENO"
                 estado = "ON" if m['activa'] else "OFF"
                 

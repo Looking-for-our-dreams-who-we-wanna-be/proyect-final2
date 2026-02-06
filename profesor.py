@@ -60,14 +60,8 @@ def ofertar_materia(nombre_profesor):
         print("Error: Código no válido o materia inactiva.")
         return
 
-    print(f"\n✅ Seleccionó: {materia_seleccionada['materia']}")
+    print(f"\nSeleccionó: {materia_seleccionada['materia']}")
     seccion = input("Ingrese la Sección (ej. A, B, N1): ").upper()
-    
-    try:
-        cupo = int(input("Ingrese el Cupo para su sección: "))
-    except ValueError:
-        print("Error: El cupo debe ser un número.")
-        return
 
     oferta_actual = cargar_datos(ARCHIVO_DB_PROFESOR)
 
@@ -76,8 +70,6 @@ def ofertar_materia(nombre_profesor):
         "codigo_materia": materia_seleccionada["codigo_materia"],
         "materia": materia_seleccionada["materia"],
         "seccion": seccion,
-        "cupo_total": cupo,
-        "cupo_disponible": cupo, 
         "horario": [] 
     }
     

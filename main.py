@@ -2,7 +2,6 @@ import os
 import json
 import time
 
-# Importamos los módulos (asumiendo que ya tienes tus archivos alumno.py y coodinador.py)
 import alumno
 import coodinador
 import profesor
@@ -42,7 +41,6 @@ if __name__ == "__main__":
             print("Cerrando sistema... ¡Hasta luego!")
             break
 
-        # Definimos el rol esperado según la opción
         rol_esperado = ""
         if opcion_rol == "1":
             rol_esperado = "coordinador"
@@ -52,11 +50,10 @@ if __name__ == "__main__":
             rol_esperado = "profesor"
         else:
             input("Opción no válida. Presione Enter para intentar de nuevo...")
-            continue # Vuelve al inicio del while
+            continue 
 
         print(f"\n--- INGRESO: {rol_esperado.upper()} ---")
 
-        # --- VALIDACIÓN DE TIPO DE DOCUMENTO ---
         prefijo_doc = ""
         while True:
             tipo_input = input("Tipo de Documento (V/E/P) [o 'A' para Admin]: ").upper()
@@ -68,31 +65,29 @@ if __name__ == "__main__":
                 break
             else:
                 print("Error: Debe escribir V, E o P.")
-        
-        # --- CAMBIO REALIZADO AQUÍ ---
+
         usuario_ingresado = input("Ingrese Cédula/Pasaporte: ")
         clave_ingresada = input("Ingrese Contraseña: ")
 
-        # --- LÓGICA DE VERIFICACIÓN DE SEGURIDAD ---
         usuario_valido = False
         datos_usuario = None
-        
-        # 1. CONSTRUIMOS EL ID ÚNICO (PREFIJO + CÉDULA)
+
         if prefijo_doc == "ADMIN":
-            # Si es admin, usamos el usuario tal cual (ej. "admin")
+      
             usuario_busqueda = usuario_ingresado 
         else:
-            # Si es persona, forzamos el formato "Letra-Cedula" (ej. "V-12345678")
+        
             usuario_busqueda = f"{prefijo_doc}-{usuario_ingresado}"
 
-        # 2. VERIFICAMOS SI EXISTE ESE USUARIO EXACTO
-        if usuario_busqueda in usuarios_db:
-            datos_usuario = usuarios_db[usuario_busqueda]
-            
-            # 3. VERIFICAMOS LA CONTRASEÑA
+        datos_usuario = None
+        
+        for u in usuarios_db:
+
+            if u.get("usuario") == usuario_busqueda:
+                datos_usuario = u
+                break  
+        if datos_usuario:
             if datos_usuario["clave"] == clave_ingresada:
-                
-                # 4. VERIFICAMOS QUE TENGA EL ROL CORRECTO
                 if datos_usuario["rol"] == rol_esperado:
                     usuario_valido = True
                 else:
@@ -100,17 +95,14 @@ if __name__ == "__main__":
             else:
                 print("\nError: Contraseña incorrecta.")
         else:
-            # Mensaje de error detallado
             print(f"\nError: Usuario '{usuario_busqueda}' no encontrado.")
             if prefijo_doc != "ADMIN":
-                print(f"(El sistema buscó '{usuario_busqueda}'. Verifique que seleccionó la letra correcta V/E/P)")
+                print(f"(El sistema buscó '{usuario_busqueda}'. Verifique V/E/P)")
 
-        # --- REDIRECCIÓN AL SISTEMA ---
         if usuario_valido:
-            print(f"\n¡Bienvenido, usuario {usuario_ingresado}!")
+            print(f"\n¡Bienvenido, usuario {usuario_busqueda}!") 
             time.sleep(1.5) 
 
-            # Limpiamos pantalla antes de entrar al módulo
             if os.name == 'nt':
                 os.system('cls')
             else:
@@ -121,11 +113,11 @@ if __name__ == "__main__":
             
             elif rol_esperado == "alumno":
 
-                alumno.menu_alumno(usuario_ingresado)
+                alumno.menu_alumno(usuario_busqueda)
                 
             elif rol_esperado == "profesor":
-                profesor.menu_profesor(usuario_ingresado)
+                profesor.menu_profesor(usuario_busqueda)
         
         else:
-            # Si falló el login
+
             input("\nPresione Enter para volver a intentar...")
