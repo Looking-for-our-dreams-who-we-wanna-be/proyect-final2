@@ -6,6 +6,10 @@ import alumno
 import coodinador
 import profesor
 
+carpeta_actual = os.path.dirname(os.path.abspath(__file__))
+
+os.chdir(carpeta_actual)
+
 if __name__ == "__main__":
 
     usuarios_db = {}
