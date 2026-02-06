@@ -2,9 +2,8 @@ import json
 import os
 import time
 
-ARCHIVO_DB_COORDINADOR = "materias.json"  
-ARCHIVO_DB_PROFESOR = "oferta_academica.json" 
-
+ARCHIVO_DB_COORDINADOR = "materias.json"       
+ARCHIVO_DB_PROFESOR = "oferta_academica.json"  
 
 def cargar_datos(archivo):
     if os.path.exists(archivo):
@@ -16,117 +15,120 @@ def cargar_datos(archivo):
     return []
 
 def guardar_datos(archivo, lista_datos):
-    with open(archivo, "w", encoding='utf-8') as f:
-        json.dump(lista_datos, f, indent=4, ensure_ascii=False)
+    try:
+        with open(archivo, "w", encoding='utf-8') as f:
+            json.dump(lista_datos, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error guardando: {e}")
 
+def limpiar_pantalla():
+    if os.name == 'nt': os.system('cls')
+    else: os.system('clear')
 
 def ver_materias_disponibles():
-
     catalogo = cargar_datos(ARCHIVO_DB_COORDINADOR)
-    
-    print("\n" + "="*50)
+    print("\n" + "="*60)
     print(f"{'CÓDIGO':<10} | {'MATERIA':<25} | {'ESTADO'}")
-    print("="*50)
+    print("="*60)
     
-    materias_activas = []
-    
+    hay = False
     for m in catalogo:
-        if m.get("activa") == True:
-            print(f"{m['codigo_materia']:<10} | {m['materia']:<25} | 🟢 DISPONIBLE")
-            materias_activas.append(m)
+        if m.get("activa"):
+            hay = True
+            print(f"{m['codigo_materia']:<10} | {m['materia']:<25} | DISPONIBLE")
             
-    if not materias_activas:
-        print(">> No hay materias activas autorizadas por el Coordinador.")
-    
-    print("="*50)
-    return materias_activas
+    if not hay: print(">> No hay materias activas disponibles.")
+    print("="*60)
+    return catalogo
 
 def ofertar_materia(nombre_profesor):
-    print("\n--- OFERTAR NUEVA SECCIÓN ---")
+    print(f"\n--- OFERTAR MATERIA ({nombre_profesor}) ---")
+    ver_materias_disponibles()
+    catalogo = cargar_datos(ARCHIVO_DB_COORDINADOR)
+    ofertas = cargar_datos(ARCHIVO_DB_PROFESOR)
 
-    disponibles = ver_materias_disponibles()
-    if not disponibles:
-        return
-
-    codigo = input("\nIngrese el CÓDIGO de la materia a dictar: ").upper()
+    codigo = input("\nIngrese CÓDIGO de la materia a dictar: ").strip().upper()
     
-    materia_seleccionada = None
-    for m in disponibles:
+    materia_base = None
+    for m in catalogo:
         if m["codigo_materia"] == codigo:
-            materia_seleccionada = m
+            materia_base = m
             break
     
-    if not materia_seleccionada:
-        print("Error: Código no válido o materia inactiva.")
+    if not materia_base:
+        print("Materia no encontrada en el catálogo.")
+        input("Enter para continuar...")
+        return
+        
+    if not materia_base.get("activa"):
+        print("Materia inactiva.")
+        input("Enter para continuar...")
         return
 
-    print(f"\nSeleccionó: {materia_seleccionada['materia']}")
-    seccion = input("Ingrese la Sección (ej. A, B, N1): ").upper()
-
-    oferta_actual = cargar_datos(ARCHIVO_DB_PROFESOR)
+    seccion = input("Sección (Ej: A, B, U1): ").strip().upper()
+    try:
+        cupo = int(input("Cupo máximo: "))
+    except:
+        print("El cupo debe ser un número.")
+        return
 
     nueva_oferta = {
         "profesor": nombre_profesor,
-        "codigo_materia": materia_seleccionada["codigo_materia"],
-        "materia": materia_seleccionada["materia"],
+        "codigo_materia": materia_base["codigo_materia"],
+        "materia": materia_base["materia"],
         "seccion": seccion,
-        "horario": [] 
+        "cupo_total": cupo,
+        "cupo_disponible": cupo,
+        "dia": materia_base.get("dia", []),
+        "bloques": materia_base.get("bloques", [])
     }
     
-    oferta_actual.append(nueva_oferta)
-    guardar_datos(ARCHIVO_DB_PROFESOR, oferta_actual)
-    
-    print(f"\n¡Sección {seccion} de {materia_seleccionada['materia']} creada exitosamente!")
+    ofertas.append(nueva_oferta)
+    guardar_datos(ARCHIVO_DB_PROFESOR, ofertas)
+    print(f"Sección {seccion} de {materia_base['materia']} creada exitosamente.")
     time.sleep(1.5)
 
 def ver_mis_ofertas(nombre_profesor):
-    todas_las_ofertas = cargar_datos(ARCHIVO_DB_PROFESOR)
+    ofertas = cargar_datos(ARCHIVO_DB_PROFESOR)
+    print(f"\n=== MATERIAS DE: {nombre_profesor.upper()} ===")
     
-    print(f"\n--- MATERIAS DICTADAS POR: {nombre_profesor.upper()} ---")
     encontrado = False
-    
-    for oferta in todas_las_ofertas:
-        if oferta.get("profesor") == nombre_profesor: 
-            print(f"• {oferta['materia']} (Sección {oferta['seccion']})")
-            print(f"  Cupos: {oferta['cupo_disponible']} / {oferta['cupo_total']}")
-            print("-" * 30)
+    for o in ofertas:
+
+        if o.get("profesor", "").upper() == nombre_profesor.upper():
+
+            materia = o.get("materia", "Sin nombre")
+            seccion = o.get("seccion", "?")
+            c_disp = o.get("cupo_disponible", 0) 
+            c_total = o.get("cupo_total", 0)
+            
+            print(f"• {materia} (Sec. {seccion})")
+            print(f"  Cupos Disponibles: {c_disp} / {c_total}")
+            print("-" * 40)
             encontrado = True
-    
+            
     if not encontrado:
-        print(">> Usted no ha ofertado materias todavía.")
+        print(">> No tiene materias ofertadas.")
     
     input("\nPresione Enter para volver...")
 
-
-
 def menu_profesor(usuario_nombre):
     while True:
-
-        if os.name == 'nt': os.system('cls')
-        
-        print(f"   PANEL DOCENTE: {usuario_nombre.upper()}")
-        print("1. Ver Materias Activas (Catalogo General)")
-        print("2. Ofertar Materia (Abrir Sección)")
-        print("3. Ver mis secciones abiertas")
+        limpiar_pantalla()
+        print(f"\nPANEL DOCENTE: {usuario_nombre}")
+        print("1. Ver Catálogo General")
+        print("2. Ofertar Materia")
+        print("3. Ver mis materias")
         print("4. Salir")
         
-        opcion = input("\nSeleccione una opción: ")
-
-        if opcion == "1":
+        op = input("\n>> Opción: ")
+        
+        if op == "1":
             ver_materias_disponibles()
-            input("\nPresione Enter para volver...")
-            
-        elif opcion == "2":
+            input("Enter para volver...")
+        elif op == "2":
             ofertar_materia(usuario_nombre)
-            
-        elif opcion == "3":
+        elif op == "3":
             ver_mis_ofertas(usuario_nombre)
-            
-        elif opcion == "4":
-            print("Cerrando sesión docente...")
+        elif op == "4":
             break
-        else:
-            print("Opción no válida.")
-
-if __name__ == "__main__":
-    menu_profesor("PROFESOR_PRUEBA")

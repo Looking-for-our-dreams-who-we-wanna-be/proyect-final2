@@ -1,9 +1,30 @@
 [
     {
-        "profesor": "PROFESOR_PRUEBA",
+        "profesor": "V-0108",
         "codigo_materia": "QUI0101",
         "materia": "Quimica I",
         "seccion": "A",
-        "horario": []
+        "cupo_total": 3,
+        "cupo_disponible": 3,
+        "dia": [
+            "Lunes"
+        ],
+        "bloques": [
+            2
+        ]
+    },
+    {
+        "profesor": "V-87654321",
+        "codigo_materia": "QUI0101",
+        "materia": "Quimica I",
+        "seccion": "A",
+        "cupo_total": 50,
+        "cupo_disponible": 50,
+        "dia": [
+            "Lunes"
+        ],
+        "bloques": [
+            2
+        ]
     }
 ]
