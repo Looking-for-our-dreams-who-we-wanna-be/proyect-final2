@@ -66,19 +66,12 @@ def ofertar_materia(nombre_profesor):
         return
 
     seccion = input("Sección (Ej: A, B, U1): ").strip().upper()
-    try:
-        cupo = int(input("Cupo máximo: "))
-    except:
-        print("El cupo debe ser un número.")
-        return
 
     nueva_oferta = {
         "profesor": nombre_profesor,
         "codigo_materia": materia_base["codigo_materia"],
         "materia": materia_base["materia"],
         "seccion": seccion,
-        "cupo_total": cupo,
-        "cupo_disponible": cupo,
         "dia": materia_base.get("dia", []),
         "bloques": materia_base.get("bloques", [])
     }
@@ -94,16 +87,11 @@ def ver_mis_ofertas(nombre_profesor):
     
     encontrado = False
     for o in ofertas:
-
         if o.get("profesor", "").upper() == nombre_profesor.upper():
-
             materia = o.get("materia", "Sin nombre")
             seccion = o.get("seccion", "?")
-            c_disp = o.get("cupo_disponible", 0) 
-            c_total = o.get("cupo_total", 0)
-            
+
             print(f"• {materia} (Sec. {seccion})")
-            print(f"  Cupos Disponibles: {c_disp} / {c_total}")
             print("-" * 40)
             encontrado = True
             
